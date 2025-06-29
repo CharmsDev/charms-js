@@ -1,0 +1,49 @@
+{
+  "name": "charms-js",
+  "version": "1.0.1",
+  "description": "TypeScript SDK for decoding Bitcoin transactions containing Charms data",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/capitaharlock/sync-pwc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/capitaharlock/sync-pwc/issues"
+  },
+  "homepage": "https://github.com/capitaharlock/sync-pwc#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "start": "ts-node examples/basic-usage.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:js": "node examples/js-usage.js",
+    "test:ts": "ts-node examples/ts-usage.ts"
+  },
+  "keywords": [
+    "bitcoin",
+    "charms",
+    "cbor",
+    "decoder"
+  ],
+  "author": "Charms Team",
+  "license": "MIT",
+  "dependencies": {
+    "@oslojs/cbor": "^0.2.2",
+    "bitcoinjs-lib": "^6.1.0",
+    "cbor": "^9.0.0",
+    "cbor-x": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/bitcoinjs-lib": "^5.0.4",
+    "@types/node": "^24.0.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
