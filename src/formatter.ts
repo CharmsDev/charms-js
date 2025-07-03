@@ -1,14 +1,14 @@
-import { CharmSummary, DetailedCharm, ErrorResponse } from './types';
+import { ParsedCharmData, CharmInstance, ErrorResponse } from './types';
 import { getAppType } from './utils';
 
-// Formats charm information into detailed array of individual charms
-export function formatDetailedCharms(charmInfo: CharmSummary, txId: string): DetailedCharm[] | ErrorResponse {
+// Converts parsed charm data to CharmInstance array with UTXO details
+export function createCharmInstances(charmInfo: ParsedCharmData, txId: string): CharmInstance[] | ErrorResponse {
   try {
     if (!charmInfo || 'error' in charmInfo) {
       return { error: (charmInfo as ErrorResponse)?.error || 'Invalid charm information' };
     }
 
-    const result: DetailedCharm[] = [];
+    const result: CharmInstance[] = [];
 
     charmInfo.outs.forEach((output, outputIndex) => {
       if (!output.charms) return;
@@ -16,7 +16,7 @@ export function formatDetailedCharms(charmInfo: CharmSummary, txId: string): Det
       Object.keys(output.charms).forEach(appId => {
         const charmData = output.charms![appId];
 
-        const detailedCharm: DetailedCharm = {
+        const charmInstance: CharmInstance = {
           utxo: {
             tx: txId,
             index: outputIndex
@@ -24,38 +24,29 @@ export function formatDetailedCharms(charmInfo: CharmSummary, txId: string): Det
           address: output.address || 'unknown',
           appId: appId,
           app: charmInfo.apps[appId] || null,
-          appType: charmInfo.apps[appId] ? getAppType(charmInfo.apps[appId]) : undefined
+          appType: charmInfo.apps[appId] ? getAppType(charmInfo.apps[appId]) : undefined,
+          verified: charmInfo.verified
         };
 
+        // Process charm data (numeric or object)
         if (typeof charmData === 'number') {
-          detailedCharm.value = charmData;
-        } else if (typeof charmData === 'object') {
-          const knownFields = [
-            'ticker', 'remaining', 'name', 'description', 'url',
-            'image', 'image_hash', 'decimals', 'ref'
-          ];
+          charmInstance.value = charmData;
+        } else if (typeof charmData === 'object' && charmData !== null) {
+          // Copy all fields dynamically using spread
+          Object.assign(charmInstance, charmData);
 
-          // Copy known fields
-          knownFields.forEach(field => {
-            if (field in charmData) {
-              detailedCharm[field] = charmData[field];
-            }
-          });
-
-          // Include additional fields
-          Object.keys(charmData).forEach(key => {
-            if (!knownFields.includes(key)) {
-              detailedCharm[key] = charmData[key];
-            }
-          });
+          // Set default custom field if not present
+          if (!charmInstance.custom) {
+            charmInstance.custom = {};
+          }
         }
 
-        result.push(detailedCharm);
+        result.push(charmInstance);
       });
     });
 
     return result;
   } catch (error) {
-    return { error: `Failed to format detailed charms: ${(error as Error).message}` };
+    return { error: `Failed to create charm instances: ${(error as Error).message}` };
   }
 }

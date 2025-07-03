@@ -1,10 +1,12 @@
 import { AppType } from './utils';
 
-export interface CharmSummary {
+export interface ParsedCharmData {
   version: number;
   apps: Record<string, string>;
   ins: InputSummary[];
   outs: OutputSummary[];
+  verified?: boolean;
+  proof?: string; // Hex-encoded proof data
   error?: string;
 }
 
@@ -17,6 +19,7 @@ export interface OutputSummary {
   charms?: Record<string, number | CharmData>;
 }
 
+// Main charm data interface with genesis tracking and extensibility
 export interface CharmData {
   ticker: string;
   remaining: number;
@@ -27,10 +30,13 @@ export interface CharmData {
   image_hash?: string;
   decimals?: number;
   ref?: string;
+  genesis_network?: string;  // Network where parent NFT was created
+  genesis_tx?: string;       // Transaction ID of the parent NFT creation
+  custom?: Record<string, any>; // For future extensibility
   [key: string]: any;
 }
 
-export interface DetailedCharm {
+export interface CharmInstance {
   utxo: {
     tx: string;
     index: number;
@@ -39,6 +45,7 @@ export interface DetailedCharm {
   appId: string;
   app: string | null;
   appType?: AppType;
+  verified?: boolean;        // Verification status when VK provided
   value?: number;
   ticker?: string;
   remaining?: number;
@@ -49,18 +56,12 @@ export interface DetailedCharm {
   image_hash?: string;
   decimals?: number;
   ref?: string;
+  genesis_network?: string;  // Network where parent NFT was created
+  genesis_tx?: string;       // Transaction ID of the parent NFT creation
+  custom?: Record<string, any>; // For future extensibility
   [key: string]: any;
 }
 
-export interface DecodedSpell {
-  version: number;
-  tx: {
-    refs: any[];
-    outs: any[];
-    ins?: any[];
-  };
-  app_public_inputs: Record<string, any>;
-}
 
 // Maps charm app index to charm data
 export type NormalizedCharms = Record<string, any>;
@@ -76,13 +77,19 @@ export interface NormalizedSpell {
   version: number;
   tx: NormalizedTransaction;
   app_public_inputs: Record<string, any>;
+  verified?: boolean;
+}
+
+// Proof type (matches Rust implementation)
+export type Proof = Uint8Array;
+
+// Spell and proof tuple from CBOR
+export interface SpellAndProof {
+  spell: NormalizedSpell;
+  proof: Proof;
 }
 
 export interface ErrorResponse {
   error: string;
 }
 
-// Type guard for error response
-export function isErrorResponse(obj: any): obj is ErrorResponse {
-  return obj && typeof obj === 'object' && 'error' in obj;
-}

@@ -1,7 +1,7 @@
-import { DecodedSpell, CharmSummary, NormalizedSpell, NormalizedCharms } from './types';
+import { ParsedCharmData, NormalizedSpell, NormalizedCharms } from './types';
 import * as cbor from 'cbor';
 
-// Converts Maps to plain objects recursively
+// Converts CBOR Maps to plain objects recursively
 function convertMapsToObjects(obj: any): any {
   if (obj instanceof Map) {
     const result: any = {};
@@ -21,7 +21,7 @@ function convertMapsToObjects(obj: any): any {
   return obj;
 }
 
-// Decodes CBOR data extracted from transaction
+// Decodes CBOR data from Bitcoin transaction
 export function decodeCbor(cborData: Buffer): NormalizedSpell | null {
   try {
     if (!cborData || cborData.length === 0) {
@@ -29,13 +29,11 @@ export function decodeCbor(cborData: Buffer): NormalizedSpell | null {
     }
 
     const rawDecoded = cbor.decode(cborData);
-
-    // Convert Maps to plain objects for JSON serialization
     const decoded = convertMapsToObjects(rawDecoded);
 
     console.log('Parsing spell data:', JSON.stringify(decoded, null, 2).substring(0, 200) + '...');
 
-    // CBOR structure is [NormalizedSpell, Proof]
+    // CBOR structure: [NormalizedSpell, Proof]
     if (!Array.isArray(decoded) || decoded.length < 2) {
       console.log('Invalid CBOR structure: expected [spell, proof] array');
       return null;
@@ -43,7 +41,7 @@ export function decodeCbor(cborData: Buffer): NormalizedSpell | null {
 
     const normalizedSpell = decoded[0];
 
-    // Validate NormalizedSpell structure
+    // Validate spell structure
     if (normalizedSpell &&
       typeof normalizedSpell === 'object' &&
       'version' in normalizedSpell &&
@@ -61,9 +59,9 @@ export function decodeCbor(cborData: Buffer): NormalizedSpell | null {
   }
 }
 
-// Denormalizes NormalizedSpell into human-readable format
-export function denormalizeSpell(normalizedSpell: NormalizedSpell): CharmSummary {
-  // Convert app_public_inputs to apps using $xxxx format
+// Converts NormalizedSpell to ParsedCharmData format
+export function denormalizeSpell(normalizedSpell: NormalizedSpell): ParsedCharmData {
+  // Convert app_public_inputs to $xxxx indexed format
   const apps: Record<string, any> = {};
   const appKeys = Object.keys(normalizedSpell.app_public_inputs);
   appKeys.forEach((appKey, index) => {
@@ -73,19 +71,19 @@ export function denormalizeSpell(normalizedSpell: NormalizedSpell): CharmSummary
 
   const ins = normalizedSpell.tx.ins || [];
 
-  // Process outputs and extract charms
+  // Extract charms from outputs
   const outs = normalizedSpell.tx.outs.map((normalizedCharms: NormalizedCharms) => {
     const output: any = {};
 
     if (Object.keys(normalizedCharms).length > 0) {
       const charms: Record<string, any> = {};
 
-      // Convert numeric app indices to $xxxx format
+      // Convert numeric indices to $xxxx format
       Object.entries(normalizedCharms).forEach(([appIndexStr, charmData]) => {
         const appIndex = parseInt(appIndexStr);
         const indexKey = `$${String(appIndex).padStart(4, '0')}`;
 
-        // Extract charm data value
+        // Preserve original CBOR structure
         if (charmData && typeof charmData === 'object' && 'value' in charmData) {
           charms[indexKey] = charmData.value;
         } else {

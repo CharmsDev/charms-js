@@ -5,16 +5,16 @@ export function extractSpellData(txHex: string): Buffer | null {
   try {
     const tx = bitcoin.Transaction.fromHex(txHex);
 
-    if (!tx.ins || tx.ins.length === 0) {
-      console.log('Transaction does not have inputs');
+    if (!tx.ins || tx.ins.length < 2) {
+      console.log('Transaction does not have enough inputs');
       return null;
     }
 
-    // Spell data is in the last input's witness
-    const spellInput = tx.ins[tx.ins.length - 1];
+    // Spell data is in the second input's witness
+    const spellInput = tx.ins[1];
 
     if (!spellInput.witness || spellInput.witness.length < 2) {
-      console.log('No witness data in the last input');
+      console.log('No witness data in the second input');
       return null;
     }
 

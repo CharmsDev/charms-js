@@ -1,6 +1,6 @@
 {
   "name": "charms-js",
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "TypeScript SDK for decoding Bitcoin transactions containing Charms data",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,10 +35,9 @@
   "author": "Charms Team",
   "license": "MIT",
   "dependencies": {
-    "@oslojs/cbor": "^0.2.2",
     "bitcoinjs-lib": "^6.1.0",
     "cbor": "^9.0.0",
-    "cbor-x": "^1.6.0"
+    "snarkjs": "^0.7.5"
   },
   "devDependencies": {
     "@types/bitcoinjs-lib": "^5.0.4",
