@@ -24,7 +24,7 @@ const containsCharms = hasCharmsData(txHex);
 console.log(`Contains Charms data: ${containsCharms}`);
 
 if (containsCharms) {
-  // Decode the transaction to get charm information (with verification)
+  // Decode the transaction to get charm information
   const charms = decodeTransaction(txHex);
   
   if ('error' in charms) {
@@ -50,7 +50,7 @@ const containsCharms = hasCharmsData(txHex);
 console.log(`Contains Charms data: ${containsCharms}`);
 
 if (containsCharms) {
-  // Decode the transaction to get charm information (with verification)
+  // Decode the transaction to get charm information
   const charms = decodeTransaction(txHex);
   
   if ('error' in charms) {
@@ -94,7 +94,6 @@ interface CharmInstance {
   appId: string;
   app: string | null;
   appType?: string;
-  verified?: boolean;       // Verification status when VK provided
   ticker?: string;
   remaining?: number;
   value?: number;
@@ -121,7 +120,7 @@ interface ErrorResponse {
 
 See the complete example in [`examples/example.ts`](examples/example.ts) which demonstrates:
 - Checking if a transaction contains Charms data
-- Decoding transaction with verification
+- Decoding transaction and extracting charm data
 - Error handling
 
 Run the example:
