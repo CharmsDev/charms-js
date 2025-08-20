@@ -5,25 +5,105 @@ export function extractSpellData(txHex: string): Buffer | null {
   try {
     const tx = bitcoin.Transaction.fromHex(txHex);
 
-    if (!tx.ins || tx.ins.length < 2) {
-      console.log('Transaction does not have enough inputs');
-      return null;
+    // First, try to extract from witness data in all inputs
+    const witnessSpell = extractSpellFromWitnessInputs(tx);
+    if (witnessSpell) {
+      return witnessSpell;
     }
 
-    // Spell data is in the second input's witness
-    const spellInput = tx.ins[1];
-
-    if (!spellInput.witness || spellInput.witness.length < 2) {
-      console.log('No witness data in the second input');
-      return null;
+    // If no witness data found, try OP_RETURN outputs
+    const opReturnSpell = extractSpellFromOpReturnOutputs(tx);
+    if (opReturnSpell) {
+      return opReturnSpell;
     }
 
-    // Spell data is in the taproot leaf script (second witness element)
-    const witnessScript = spellInput.witness[1];
-
-    return extractSpellFromWitnessScript(witnessScript);
+    console.log('No spell data found in transaction');
+    return null;
   } catch (error) {
     console.log(`Error extracting spell data: ${(error as Error).message}`);
+    return null;
+  }
+}
+
+// Extract spell data from witness inputs (current method)
+function extractSpellFromWitnessInputs(tx: bitcoin.Transaction): Buffer | null {
+  if (!tx.ins || tx.ins.length === 0) {
+    return null;
+  }
+
+  // Try all inputs, not just the second one
+  for (let i = 0; i < tx.ins.length; i++) {
+    const input = tx.ins[i];
+    
+    if (input.witness && input.witness.length >= 2) {
+      // Try taproot leaf script (second witness element)
+      const witnessScript = input.witness[1];
+      const spellData = extractSpellFromWitnessScript(witnessScript);
+      
+      if (spellData) {
+        console.log(`Found spell data in input ${i} witness`);
+        return spellData;
+      }
+    }
+  }
+
+  return null;
+}
+
+// Extract spell data from OP_RETURN outputs
+function extractSpellFromOpReturnOutputs(tx: bitcoin.Transaction): Buffer | null {
+  if (!tx.outs || tx.outs.length === 0) {
+    return null;
+  }
+
+  // Search all outputs for OP_RETURN with spell data
+  for (let i = 0; i < tx.outs.length; i++) {
+    const output = tx.outs[i];
+    
+    if (output.script && output.script.length > 0) {
+      // Check if it's an OP_RETURN script (starts with 0x6a)
+      if (output.script[0] === 0x6a) {
+        const spellData = extractSpellFromOpReturnScript(output.script);
+        
+        if (spellData) {
+          console.log(`Found spell data in output ${i} OP_RETURN`);
+          return spellData;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+// Extract spell data from OP_RETURN script
+function extractSpellFromOpReturnScript(script: Buffer): Buffer | null {
+  try {
+    const scriptHex = script.toString('hex');
+    
+    // Skip OP_RETURN opcode (6a) and look for spell data
+    const SPELL_HEX = '7370656c6c'; // "spell" in hex
+    
+    const spellIndex = scriptHex.indexOf(SPELL_HEX);
+    if (spellIndex === -1) {
+      return null;
+    }
+
+    // Extract data after "spell" marker
+    const dataStartIndex = spellIndex + SPELL_HEX.length;
+    const remainingHex = scriptHex.substring(dataStartIndex);
+    
+    // Try to parse as direct CBOR data
+    if (remainingHex.length > 0) {
+      const cborData = Buffer.from(remainingHex, 'hex');
+      console.log('Extracted CBOR data from OP_RETURN (first 100 chars):', cborData.toString('hex').substring(0, 100) + '...');
+      console.log('CBOR data length:', cborData.length, 'bytes');
+      return cborData;
+    }
+
+    return null;
+  } catch (error) {
+    console.log(`Error extracting spell from OP_RETURN script: ${(error as Error).message}`);
     return null;
   }
 }

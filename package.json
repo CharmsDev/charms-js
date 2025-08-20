@@ -1,6 +1,6 @@
 {
   "name": "charms-js",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "TypeScript SDK for decoding Bitcoin transactions containing Charms data",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,10 +21,9 @@
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
-    "start": "ts-node examples/basic-usage.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test:js": "node examples/js-usage.js",
-    "test:ts": "ts-node examples/ts-usage.ts"
+    "start": "ts-node examples/example.ts",
+    "test": "npm run start",
+    "test:example": "ts-node examples/example.ts"
   },
   "keywords": [
     "bitcoin",

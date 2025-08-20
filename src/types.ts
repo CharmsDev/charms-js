@@ -77,7 +77,6 @@ export interface NormalizedSpell {
   version: number;
   tx: NormalizedTransaction;
   app_public_inputs: Record<string, any>;
-  verified?: boolean;
 }
 
 // Proof type (matches Rust implementation)
@@ -93,3 +92,10 @@ export interface ErrorResponse {
   error: string;
 }
 
+// Network configuration for Bitcoin networks
+export type BitcoinNetwork = 'mainnet' | 'testnet4';
+
+export interface NetworkConfig {
+  network?: BitcoinNetwork;
+  apiBaseUrl?: string;
+}

@@ -5,8 +5,8 @@ export enum AppType {
 }
 
 // Determines app type from app string
-export function getAppType(appString: string): AppType {
-  if (!appString) {
+export function getAppType(appString: any): AppType {
+  if (!appString || typeof appString !== 'string') {
     return AppType.UNKNOWN;
   }
 
@@ -20,8 +20,8 @@ export function getAppType(appString: string): AppType {
 }
 
 // Extracts app ID from app string format "n/[app_id]/..." or "t/[app_id]/..."
-export function extractAppId(appString: string): string {
-  if (!appString) {
+export function extractAppId(appString: any): string {
+  if (!appString || typeof appString !== 'string') {
     return '';
   }
 
