@@ -2,6 +2,13 @@
 
 TypeScript library for decoding Bitcoin transactions containing Charms data.
 
+## What's New in v2.0.2
+
+- **Fixed app_public_inputs decoding**: Now properly decodes CBOR Map structures to canonical `t/<hash1>/<hash2>` format
+- **Improved App ID reconstruction**: Eliminates placeholder `$0000` values with correct canonical App IDs
+- **Enhanced compatibility**: Output format now matches wallet service implementation
+- **Better data preservation**: Maintains associated values like `{ action: 'transfer' }` in app_public_inputs
+
 ## Installation
 
 ```bash
@@ -91,8 +98,8 @@ interface CharmInstance {
     index: number;
   };
   address: string;
-  appId: string;
-  app: string | null;
+  appId: string;  // Now properly reconstructed as 't/hash1/hash2' format
+  app: Record<string, any> | null;  // Contains decoded app_public_inputs data
   appType?: string;
   ticker?: string;
   remaining?: number;
@@ -105,6 +112,7 @@ interface CharmInstance {
   decimals?: number;
   ref?: string;
   custom?: Record<string, any>;
+  verified?: boolean;
 }
 ```
 
@@ -116,15 +124,40 @@ interface ErrorResponse {
 }
 ```
 
-## Example
+## Example Output
+
+With the latest fixes, decoded charms now include properly reconstructed App IDs:
+
+```json
+[
+  {
+    "utxo": {
+      "tx": "1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c",
+      "index": 0
+    },
+    "address": "tb1pqayvc6ff9w6yfc6yu2luczt8lx800kg0vz47vp5czztpq55aqppsx8473c",
+    "appId": "t/bd3af41907e148dfca5ba461da1f0b10b329abbb1a068da541323dafddf19b94/49dafd44a86f587258159760b6724f40ccaa0350bf503563ab33984e4dc31008",
+    "app": {
+      "action": "transfer"
+    },
+    "appType": "unknown",
+    "value": 1800
+  }
+]
+```
+
+## Running Examples
 
 See the complete example in [`examples/example.ts`](examples/example.ts) which demonstrates:
 - Checking if a transaction contains Charms data
 - Decoding transaction and extracting charm data
+- Proper App ID reconstruction
 - Error handling
 
 Run the example:
 ```bash
+npm run test
+# or
 npx ts-node examples/example.ts
 ```
 
