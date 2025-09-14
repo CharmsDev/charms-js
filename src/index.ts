@@ -4,6 +4,48 @@ import { decodeCbor, denormalizeSpell } from './decoder';
 import { createCharmInstances } from './formatter';
 import { CharmInstance, ErrorResponse, NormalizedSpell, BitcoinNetwork, NetworkConfig } from './types';
 import { extractAddress } from './address';
+import { initializeWasm, isWasmAvailable, extractCharmsWithWasm, getWasmInfo } from './wasm-integration';
+
+/**
+ * Decode transaction with WASM when available, fallback to current implementation
+ * @param txHex - Transaction hex string
+ * @param network - Bitcoin network (optional, defaults to testnet4)
+ * @returns Promise resolving to array of CharmInstance objects
+ */
+export async function decodeTransactionHybrid(txHex: string, network: BitcoinNetwork = 'testnet4'): Promise<CharmInstance[]> {
+  // Try WASM first if available
+  if (isWasmAvailable()) {
+    try {
+      const txId = extractTxIdFromHex(txHex);
+      const result = await extractCharmsWithWasm(txHex, txId);
+      console.log('✅ WASM decoding successful, found', result.length, 'charms');
+      return result;
+    } catch (error) {
+      console.warn('⚠️ WASM decoding failed, falling back to current implementation:', error);
+    }
+  }
+  
+  // Fallback to current implementation
+  console.log('📦 Using current CBOR implementation');
+  const result = await decodeTransaction(txHex, { network });
+  if (Array.isArray(result)) {
+    return result;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+/**
+ * Extract transaction ID from hex (simplified version)
+ */
+function extractTxIdFromHex(txHex: string): string {
+  try {
+    const tx = bitcoin.Transaction.fromHex(txHex);
+    return tx.getId();
+  } catch (error) {
+    return 'unknown';
+  }
+}
 
 // Add transaction inputs to spell
 function addTransactionInputs(spell: NormalizedSpell, tx: bitcoin.Transaction): NormalizedSpell {
@@ -105,3 +147,6 @@ export async function decodeTransactionById(txId: string, config?: NetworkConfig
 
 export * from './types';
 export * from './utils';
+
+// WASM Integration exports
+export { initializeWasm, isWasmAvailable, getWasmInfo } from './wasm-integration';

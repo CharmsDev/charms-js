@@ -1,0 +1,308 @@
+
+> charms-js@2.0.2 test
+> npm run start
+
+
+> charms-js@2.0.2 start
+> ts-node examples/example.ts
+
+=== Charms JS Network Testing Example ===
+
+Testing with new decodeTransactionById API:
+
+🔸 Test 1: Default network behavior
+
+=== Testing Transaction: 1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c (default (testnet4)) ===
+Fetching and decoding transaction...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e04627478a2647265667380646f75747382a100190708a10018c8716170705f7075626c69635f696e...
+CBOR data length: 687 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 4,
+    "tx": {
+      "refs": [],
+      "outs": [
+        {
+          "0": 1800
+        },
+        {
+          "0": 200
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t...
+   Success! Decoded Charms:
+[
+    {
+        "utxo": {
+            "tx": "1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c",
+            "index": 0
+        },
+        "address": "tb1pqayvc6ff9w6yfc6yu2luczt8lx800kg0vz47vp5czztpq55aqppsx8473c",
+        "appId": "t/bd3af41907e148dfca5ba461da1f0b10b329abbb1a068da541323dafddf19b94/49dafd44a86f587258159760b6724f40ccaa0350bf503563ab33984e4dc31008",
+        "app": {
+            "action": "transfer"
+        },
+        "appType": "unknown",
+        "value": 1800
+    },
+    {
+        "utxo": {
+            "tx": "1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c",
+            "index": 1
+        },
+        "address": "tb1qyg7awy3lr6yxd66eyc02tupn6n0566s4e9vpck",
+        "appId": "t/bd3af41907e148dfca5ba461da1f0b10b329abbb1a068da541323dafddf19b94/49dafd44a86f587258159760b6724f40ccaa0350bf503563ab33984e4dc31008",
+        "app": {
+            "action": "transfer"
+        },
+        "appType": "unknown",
+        "value": 200
+    }
+]
+
+   Found 2 charm(s) in this transaction.
+   Transaction ID: 1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c
+
+=== Testing Transaction: 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9 (default (testnet4)) ===
+Fetching and decoding transaction...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e06627478a1646f75747381a1001b000000035d498080716170705f7075626c69635f696e70757473...
+CBOR data length: 682 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 6,
+    "tx": {
+      "outs": [
+        {
+          "0": 14450000000
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d849...
+   Success! Decoded Charms:
+[
+    {
+        "utxo": {
+            "tx": "86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9",
+            "index": 0
+        },
+        "address": "tb1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqp3mvzv",
+        "appId": "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d84957a42ed65786ee/6c730a8c2525445acd8efecb8dae6549dc64ce78ef3c50631ee0dad9ab8f7618",
+        "app": {},
+        "appType": "unknown",
+        "value": 14450000000
+    }
+]
+
+   Found 1 charm(s) in this transaction.
+   Transaction ID: 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9
+
+=== Testing Transaction: 1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528 (default (testnet4)) ===
+Fetching and decoding transaction...
+   Error: Failed to fetch transaction 1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528
+
+
+🔸 Test 2: Explicit testnet4 network
+
+=== Testing Transaction: 1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c (testnet4) ===
+Fetching and decoding transaction...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e04627478a2647265667380646f75747382a100190708a10018c8716170705f7075626c69635f696e...
+CBOR data length: 687 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 4,
+    "tx": {
+      "refs": [],
+      "outs": [
+        {
+          "0": 1800
+        },
+        {
+          "0": 200
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t...
+   Success! Decoded Charms:
+[
+    {
+        "utxo": {
+            "tx": "1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c",
+            "index": 0
+        },
+        "address": "tb1pqayvc6ff9w6yfc6yu2luczt8lx800kg0vz47vp5czztpq55aqppsx8473c",
+        "appId": "t/bd3af41907e148dfca5ba461da1f0b10b329abbb1a068da541323dafddf19b94/49dafd44a86f587258159760b6724f40ccaa0350bf503563ab33984e4dc31008",
+        "app": {
+            "action": "transfer"
+        },
+        "appType": "unknown",
+        "value": 1800
+    },
+    {
+        "utxo": {
+            "tx": "1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c",
+            "index": 1
+        },
+        "address": "tb1qyg7awy3lr6yxd66eyc02tupn6n0566s4e9vpck",
+        "appId": "t/bd3af41907e148dfca5ba461da1f0b10b329abbb1a068da541323dafddf19b94/49dafd44a86f587258159760b6724f40ccaa0350bf503563ab33984e4dc31008",
+        "app": {
+            "action": "transfer"
+        },
+        "appType": "unknown",
+        "value": 200
+    }
+]
+
+   Found 2 charm(s) in this transaction.
+   Transaction ID: 1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c
+
+=== Testing Transaction: 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9 (testnet4) ===
+Fetching and decoding transaction...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e06627478a1646f75747381a1001b000000035d498080716170705f7075626c69635f696e70757473...
+CBOR data length: 682 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 6,
+    "tx": {
+      "outs": [
+        {
+          "0": 14450000000
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d849...
+   Success! Decoded Charms:
+[
+    {
+        "utxo": {
+            "tx": "86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9",
+            "index": 0
+        },
+        "address": "tb1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqp3mvzv",
+        "appId": "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d84957a42ed65786ee/6c730a8c2525445acd8efecb8dae6549dc64ce78ef3c50631ee0dad9ab8f7618",
+        "app": {},
+        "appType": "unknown",
+        "value": 14450000000
+    }
+]
+
+   Found 1 charm(s) in this transaction.
+   Transaction ID: 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9
+
+=== Testing Transaction: 1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528 (testnet4) ===
+Fetching and decoding transaction...
+   Error: Failed to fetch transaction 1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528
+
+
+🔸 Test 3: Mainnet network (expecting failures)
+
+=== Testing Transaction: 1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c (mainnet) ===
+Fetching and decoding transaction...
+   Error: Failed to fetch transaction 1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c
+
+=== Testing Transaction: 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9 (mainnet) ===
+Fetching and decoding transaction...
+   Error: Failed to fetch transaction 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9
+
+=== Testing Transaction: 1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528 (mainnet) ===
+Fetching and decoding transaction...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e07627478a1646f75747381a1001b00000009502f9000716170705f7075626c69635f696e70757473...
+CBOR data length: 685 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 7,
+    "tx": {
+      "outs": [
+        {
+          "0": 40000000000
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t/3d7fe7e4cea6121947af73d70e5119bebd8aa5b7edfe74bfaf...
+   Success! Decoded Charms:
+[
+    {
+        "utxo": {
+            "tx": "1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528",
+            "index": 0
+        },
+        "address": "tb1pa3fw9qya0pepms2yfmezwjdcuu7qer6eet20wrn67jcn6vz69p6qgje45e",
+        "appId": "t/3d7fe7e4cea6121947af73d70e5119bebd8aa5b7edfe74bfaf6e779a1847bd9b/c975d4e0c292fb95efbda5c13312d6ac1d8b5aeff7f0f1e5578645a2da70ff5f",
+        "app": {},
+        "appType": "unknown",
+        "value": 40000000000
+    }
+]
+
+   Found 1 charm(s) in this transaction.
+   Transaction ID: 1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528
+
+
+🔸 Test 4: Legacy hex-based method (testnet4)
+
+=== Testing Transaction with Hex: 86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9 (default (testnet4)) ===
+   Transaction hex fetched successfully
+   Checking if transaction contains Charms data...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e06627478a1646f75747381a1001b000000035d498080716170705f7075626c69635f696e70757473...
+CBOR data length: 682 bytes
+Found spell data in input 1 witness
+   Contains Charms data: true
+   Extracting spell version...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e06627478a1646f75747381a1001b000000035d498080716170705f7075626c69635f696e70757473...
+CBOR data length: 682 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 6,
+    "tx": {
+      "outs": [
+        {
+          "0": 14450000000
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d849...
+   Spell version: 6
+   Decoding transaction...
+Extracted CBOR data hex (first 100 chars): 82a36776657273696f6e06627478a1646f75747381a1001b000000035d498080716170705f7075626c69635f696e70757473...
+CBOR data length: 682 bytes
+Found spell data in input 1 witness
+Parsing spell data: [
+  {
+    "version": 6,
+    "tx": {
+      "outs": [
+        {
+          "0": 14450000000
+        }
+      ]
+    },
+    "app_public_inputs": {
+      "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d849...
+   Decoded Charms:
+[
+    {
+        "utxo": {
+            "tx": "86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9",
+            "index": 0
+        },
+        "address": "tb1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqp3mvzv",
+        "appId": "t/7cf8ee7186e40f7bd91032d14967bca152df097f720dd6d84957a42ed65786ee/6c730a8c2525445acd8efecb8dae6549dc64ce78ef3c50631ee0dad9ab8f7618",
+        "app": {},
+        "appType": "unknown",
+        "value": 14450000000
+    }
+]
+
+   Found 1 charm(s) in this transaction.

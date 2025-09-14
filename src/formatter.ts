@@ -9,7 +9,7 @@ import { getAppType } from './utils';
  * @param appId - The original appId (could be $0000 or already decoded).
  * @returns The reconstructed APP ID, or the original `appId` if reconstruction fails.
  */
-function reconstructAppId(appData: any, appId: string): string {
+export function reconstructAppId(appData: any, appId: string): string {
     // If we have a valid canonical appId already (from proper decoding), use it
     if (appId && appId !== '$0000' && appId.startsWith('t/') && appId.includes('/')) {
         return appId;
