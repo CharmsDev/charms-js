@@ -1,20 +1,49 @@
 import { ParsedCharmData, NormalizedSpell, NormalizedCharms } from './types';
 import * as cbor from 'cbor';
 
-// Converts CBOR Maps to plain objects recursively
-function convertMapsToObjects(obj: any): any {
+// Converts CBOR Maps to plain objects recursively, with special handling for app_public_inputs
+function convertMapsToObjects(obj: any, isAppPublicInputs: boolean = false): any {
   if (obj instanceof Map) {
-    const result: any = {};
-    for (const [key, value] of obj.entries()) {
-      result[key] = convertMapsToObjects(value);
+    if (isAppPublicInputs) {
+      // Special handling for app_public_inputs Map
+      // Convert Map entries where key is ['t', hash1Array, hash2Array] to canonical string format
+      const result: any = {};
+      for (const [key, value] of obj.entries()) {
+        if (Array.isArray(key) && key.length >= 3 && key[0] === 't') {
+          // Convert the key from ['t', hash1Array, hash2Array] to 't/hash1/hash2'
+          try {
+            const hash1 = Buffer.from(key[1]).toString('hex');
+            const hash2 = Buffer.from(key[2]).toString('hex');
+            const canonicalKey = `t/${hash1}/${hash2}`;
+            result[canonicalKey] = convertMapsToObjects(value, false);
+          } catch (error) {
+            // If conversion fails, use original key
+            result[String(key)] = convertMapsToObjects(value, false);
+          }
+        } else {
+          result[String(key)] = convertMapsToObjects(value, false);
+        }
+      }
+      return result;
+    } else {
+      // Regular Map to object conversion
+      const result: any = {};
+      for (const [key, value] of obj.entries()) {
+        result[key] = convertMapsToObjects(value, false);
+      }
+      return result;
     }
-    return result;
   } else if (Array.isArray(obj)) {
-    return obj.map(item => convertMapsToObjects(item));
+    return obj.map(item => convertMapsToObjects(item, false));
   } else if (obj && typeof obj === 'object') {
     const result: any = {};
     for (const [key, value] of Object.entries(obj)) {
-      result[key] = convertMapsToObjects(value);
+      // Special handling for app_public_inputs to properly decode Map structure
+      if (key === 'app_public_inputs' && value instanceof Map) {
+        result[key] = convertMapsToObjects(value, true);
+      } else {
+        result[key] = convertMapsToObjects(value, false);
+      }
     }
     return result;
   }
@@ -29,6 +58,9 @@ export function decodeCbor(cborData: Buffer): NormalizedSpell | null {
     }
 
     const rawDecoded = cbor.decode(cborData);
+    
+    // CBOR decoded successfully
+    
     const decoded = convertMapsToObjects(rawDecoded);
 
     console.log('Parsing spell data:', JSON.stringify(decoded, null, 2).substring(0, 200) + '...');
@@ -61,12 +93,26 @@ export function decodeCbor(cborData: Buffer): NormalizedSpell | null {
 
 // Converts NormalizedSpell to ParsedCharmData format
 export function denormalizeSpell(normalizedSpell: NormalizedSpell): ParsedCharmData {
-  // Convert app_public_inputs to $xxxx indexed format
+  // Handle app_public_inputs as Map or Object
   const apps: Record<string, any> = {};
-  const appKeys = Object.keys(normalizedSpell.app_public_inputs);
-  appKeys.forEach((appKey, index) => {
+  
+  let appEntries: [string, any][] = [];
+  if (normalizedSpell.app_public_inputs instanceof Map) {
+    // If it's a Map, get entries directly
+    appEntries = Array.from(normalizedSpell.app_public_inputs.entries());
+  } else if (typeof normalizedSpell.app_public_inputs === 'object') {
+    // If it's an object, convert to entries
+    appEntries = Object.entries(normalizedSpell.app_public_inputs);
+  }
+  
+  appEntries.forEach(([appKey, appData], index) => {
     const indexKey = `$${String(index).padStart(4, '0')}`;
-    apps[indexKey] = normalizedSpell.app_public_inputs[appKey];
+    apps[indexKey] = {
+      // Store the raw data internally for App ID reconstruction
+      _app_public_inputs_raw: appKey,
+      // Spread any additional app data (like action, etc.)
+      ...(appData || {})
+    };
   });
 
   const ins = normalizedSpell.tx.ins || [];

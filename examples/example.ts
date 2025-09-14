@@ -6,7 +6,8 @@ import { BitcoinNetwork } from '../src/types';
 // Test transaction IDs to fetch and decode
 const testTxIds = [
     '1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c',
-    '86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9'
+    '86081de981f11ba05701dd20be846897b6154d510abef824895c7a8282f131a9',
+    '1a34811c66f4dfd9953c02c95d33d96f775870ac8a111c43ca6ab17d3f3a4528' // New test transaction with charm
 ];
 
 // Function to test a single transaction using the new API
