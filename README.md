@@ -1,38 +1,6 @@
 # Charms JS
 
-Official TypeScript SDK for decoding Bitcoin transactions containing Charms data. Powered by the official `charms-lib` WASM module for maximum performance and accuracy.
-
-## What's New in v3.0.0
-
-- **🚀 Official WASM Integration**: Now uses the official `charms-lib` WASM module for spell extraction and verification
-- **⚡ Simplified Architecture**: Eliminates manual CBOR parsing in favor of native WASM processing
-- **🔒 Built-in Verification**: Automatic spell verification through the official Charms library
-- **🔄 Hybrid API**: Seamless fallback to legacy implementation when WASM is unavailable
-- **📦 Zero Configuration**: Works out-of-the-box with optional WASM acceleration
-
-## Quick Start
-
-### Basic Usage (Legacy Mode)
-
-```typescript
-import { decodeTransactionHybrid } from 'charms-js';
-
-// Hybrid API - uses WASM when available, falls back to legacy
-const charms = await decodeTransactionHybrid(txHex, 'testnet4');
-```
-
-### WASM-Accelerated Usage (Recommended)
-
-```typescript
-import { initializeWasm, decodeTransactionHybrid } from 'charms-js';
-
-// Initialize with official charms-lib WASM module
-const wasmModule = await import('./charms-lib/charms_lib.js');
-initializeWasm(wasmModule);
-
-// Now all calls use official WASM processing
-const charms = await decodeTransactionHybrid(txHex, 'testnet4');
-```
+TypeScript SDK for decoding Bitcoin transactions containing Charms data.
 
 ## Installation
 
@@ -42,202 +10,116 @@ npm install charms-js
 
 ## Usage
 
-### TypeScript
+### Browser (Automatic WASM initialization)
 
 ```typescript
-import { decodeTransaction, hasCharmsData } from 'charms-js';
+import { extractCharmsForWallet } from 'charms-js';
 
-// Example Bitcoin transaction hex containing Charms data
-const txHex = '0200000000010...'; // Your transaction hex here
+// Simple usage - WASM auto-initializes
+const charms = await extractCharmsForWallet(
+  txHex, 
+  txId, 
+  walletOutpoints, 
+  'testnet4'
+);
 
-
-// Check if the transaction contains Charms data
-const containsCharms = hasCharmsData(txHex);
-console.log(`Contains Charms data: ${containsCharms}`);
-
-if (containsCharms) {
-  // Decode the transaction to get charm information
-  const charms = decodeTransaction(txHex);
-  
-  if ('error' in charms) {
-    console.log(`Error: ${charms.error}`);
-  } else {
-    console.log('Charms:', JSON.stringify(charms, null, 2));
-    console.log(`Found ${charms.length} charm(s)`);
-  }
-}
+console.log('Charms found:', charms);
 ```
 
-### JavaScript
+**Requirements for Browser:**
+- Copy `charms_lib_bg.wasm` to your `public/` directory
+- The library will automatically load and initialize the WASM module
 
-```javascript
-const { decodeTransaction, hasCharmsData } = require('charms-js');
+### Node.js (Manual WASM initialization)
 
-// Example Bitcoin transaction hex containing Charms data
-const txHex = '0200000000010...'; // Your transaction hex here
+```typescript
+import { initializeWasm, extractCharmsForWallet } from 'charms-js/dist/node';
 
+// Manual WASM initialization required
+const wasmBindings = await import('charms-js/dist/wasm/charms_lib_bg.js');
+const fs = require('fs');
+const wasmBuffer = fs.readFileSync('path/to/charms_lib_bg.wasm');
 
-// Check if the transaction contains Charms data
-const containsCharms = hasCharmsData(txHex);
-console.log(`Contains Charms data: ${containsCharms}`);
+const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
+  './charms_lib_bg.js': wasmBindings
+});
 
-if (containsCharms) {
-  // Decode the transaction to get charm information
-  const charms = decodeTransaction(txHex);
-  
-  if ('error' in charms) {
-    console.log(`Error: ${charms.error}`);
-  } else {
-    console.log('Charms:', JSON.stringify(charms, null, 2));
-    console.log(`Found ${charms.length} charm(s)`);
-  }
-}
+wasmBindings.__wbg_set_wasm(wasmModule.instance.exports);
+initializeWasm(wasmBindings);
+
+// Now you can use the library
+const charms = await extractCharmsForWallet(txHex, txId, walletOutpoints, 'testnet4');
+```
+
+## File Structure
+
+```
+src/
+├── index.ts          # Browser entry point (auto-init WASM)
+├── node.ts           # Node.js entry point (manual init)
+├── browser.ts        # Browser-specific WASM auto-initialization
+├── wasm-integration.ts # Core WASM integration logic
+├── wallet-adapter.ts # Wallet filtering utilities
+└── wasm/            # WASM binaries and bindings
+    ├── charms_lib_bg.wasm
+    └── charms_lib_bg.js
 ```
 
 ## API Reference
 
-### Core Functions
+### `extractCharmsForWallet(txHex, txId, walletOutpoints, network?)`
 
-#### `decodeTransactionHybrid(txHex: string, network?: BitcoinNetwork): Promise<CharmInstance[]>`
-
-Hybrid decoding function that uses WASM when available, falls back to legacy implementation.
+Extracts charms from a transaction, filtered by wallet ownership.
 
 **Parameters:**
-- `txHex` - Raw transaction hex string
-- `network` - Bitcoin network (`'mainnet'` | `'testnet4'`, default: `'testnet4'`)
+- `txHex`: Transaction hex string
+- `txId`: Transaction ID
+- `walletOutpoints`: Set of wallet-owned outpoints (`txid:vout`)
+- `network`: 'mainnet' or 'testnet4' (default: 'testnet4')
 
-**Returns:** Array of `CharmInstance` objects
+**Returns:** `Promise<CharmObj[]>`
 
-### WASM Integration
+### Browser-only functions
 
-#### `initializeWasm(wasmModule: any): void`
-
-Initializes the official charms-lib WASM module for enhanced performance.
-
-#### `isWasmAvailable(): boolean`
-
-Checks if WASM module is loaded and ready.
-
-#### `getWasmInfo(): object`
-
-Returns WASM module status and debug information.
-
-### Legacy Functions
-
-#### `decodeTransaction(txHex: string, config?: NetworkConfig): Promise<CharmInstance[] | ErrorResponse>`
-
-Legacy CBOR-based decoding (maintained for compatibility).
-
-#### `decodeTransactionById(txId: string, config?: NetworkConfig): Promise<CharmInstance[] | ErrorResponse>`
-
-Fetches and decodes transaction by ID using legacy method.
+- `isWasmReady()`: Check if WASM is initialized
 
 ## Types
 
-### Data Types
-
-#### `CharmInstance`
-
 ```typescript
-interface CharmInstance {
-  utxo: {
-    tx: string;        // Transaction ID
-    index: number;     // Output index
+interface CharmObj {
+  appId: string;
+  amount: number;
+  version: string;
+  metadata: {
+    ticker?: string;
+    name?: string;
+    description?: string;
+    image?: string;
+    image_hash?: string;
+    url?: string;
   };
-  address: string;     // Bitcoin address
-  appId: string;       // Canonical app ID (t/hash1/hash2)
-  app: string | null;  // App-specific data
-  appType?: AppType;   // Detected app type
-  value?: number;      // Satoshi value
-  verified?: boolean;  // WASM verification status
-  // Additional charm metadata...
+  app: Record<string, any>;
+  outputIndex: number;
+  txid: string;
+  address: string;
 }
 ```
 
-#### WASM vs Legacy Differences
+## Migration from v3.0.x
 
-| Feature | WASM Mode | Legacy Mode |
-|---------|-----------|-------------|
-| **Performance** | ⚡ Native speed | 🐌 JavaScript parsing |
-| **Verification** | ✅ Built-in | ❌ Manual |
-| **Accuracy** | 🎯 Official library | 📝 Best-effort |
-| **Bundle Size** | 📦 +1.2MB WASM | 📦 Minimal |
-| **Compatibility** | 🌐 Modern browsers | 🌐 Universal |
-
-### `ErrorResponse`
+**Browser users:** Replace manual WASM initialization with direct imports:
 
 ```typescript
-interface ErrorResponse {
-  error: string;
-}
+// OLD (manual)
+await ensureWasmInitialized();
+const charms = await extractCharmsForWallet(...);
+
+// NEW (automatic)
+import { extractCharmsForWallet } from 'charms-js';
+const charms = await extractCharmsForWallet(...);
 ```
 
-## Example Output
-
-Both WASM and legacy modes produce identical, verified charm data:
-
-```json
-[
-  {
-    "utxo": {
-      "tx": "1f1986613f3be85b8565ceff7db2c0ab20fd2e70d56fa78f41ce064743b43a2c",
-      "index": 0
-    },
-    "address": "tb1pqayvc6ff9w6yfc6yu2luczt8lx800kg0vz47vp5czztpq55aqppsx8473c",
-    "appId": "t/bd3af41907e148dfca5ba461da1f0b10b329abbb1a068da541323dafddf19b94/49dafd44a86f587258159760b6724f40ccaa0350bf503563ab33984e4dc31008",
-    "app": {
-      "action": "transfer"
-    },
-    "value": 1800,
-    "verified": true
-  }
-]
-```
-
-## Examples
-
-### Basic Example
-```bash
-npm run test
-```
-
-### WASM Integration Example
-```bash
-npx ts-node examples/wasm-example.ts
-```
-
-## Migration from v2.x
-
-### Breaking Changes
-- New hybrid API recommended over legacy functions
-- WASM module must be explicitly initialized for best performance
-- Some internal APIs have been restructured
-
-### Migration Guide
-```typescript
-// v2.x
-import { decodeTransaction } from 'charms-js';
-const result = await decodeTransaction(txHex);
-
-// v3.x (recommended)
-import { decodeTransactionHybrid, initializeWasm } from 'charms-js';
-
-// Optional: Initialize WASM for best performance
-const wasm = await import('./charms-lib/charms_lib.js');
-initializeWasm(wasm);
-
-// Use hybrid API
-const result = await decodeTransactionHybrid(txHex, 'testnet4');
-```
-
-## Architecture
-
-Charms.js v3.0 integrates the official `charms-lib` WASM module, providing:
-
-- **Native Performance**: WASM-based spell extraction and verification
-- **Official Compatibility**: Uses the same library as Charms Wallet
-- **Automatic Fallback**: Graceful degradation to JavaScript implementation
-- **Zero Config**: Works immediately, WASM is optional enhancement
+- The WASM extraction operates on `txHex`. The `txid` included in `CharmObj` is provided for identification and wallet filtering convenience.
 
 ## License
 
