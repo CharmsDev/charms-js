@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.0] - 2025-11-10
+
+### Changed
+- **BREAKING:** Replaced `bitcoinjs-lib` with `@scure/btc-signer` for better browser compatibility
+  - Eliminates need for Node.js polyfills (Buffer, etc.) in browser environments
+  - Smaller bundle size and faster load times
+  - Native ES modules support
+  - All functionality remains the same, no API changes
+
+### Added
+- Clean, organized examples structure:
+  - `examples/node/` - Node.js usage example with full documentation
+  - `examples/browser/` - Browser usage example with Vite setup
+  - Comprehensive README files for each example
+
+### Improved
+- Professional code comments and documentation
+- Better JSDoc annotations for all public functions
+- Cleaner codebase without debug artifacts
+
+### Migration Guide
+- No code changes required for users
+- Simply update to `charms-js@3.3.0`
+- Browser builds will be smaller and faster
+- No polyfills needed in your bundler configuration
+
 ## [3.2.2] - 2025-11-07
 
 ### Fixed
