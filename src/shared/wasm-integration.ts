@@ -235,37 +235,35 @@ function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'main
         return [];
     }
 
-    // Process transaction outputs - only create charms for outputs that have charm data
+    // Process transaction outputs containing charm data
     if (wasmResult.tx && wasmResult.tx.outs && wasmResult.tx.outs.length > 0) {
         wasmResult.tx.outs.forEach((outputCharms: any, outputIndex: number) => {
-            // outputCharms is a Map or Object of { appIndex: charmData }
-            // Only process if this output has charms
-            
             const charmEntries = outputCharms instanceof Map 
                 ? Array.from(outputCharms.entries())
                 : Object.entries(outputCharms);
             
-            // Skip empty outputs
             if (charmEntries.length === 0) {
                 return;
             }
             
-            // Extract address for this output
+            // Extract the Bitcoin address for this output
             let address = '';
+            let actualOutputIndex = outputIndex;
+            
             try {
                 if (transactionHex) {
-                    const scriptPubKey = extractScriptPubKeyFromTxHex(transactionHex, outputIndex);
+                    let scriptPubKey = extractScriptPubKeyFromTxHex(transactionHex, outputIndex);
                     
                     if (scriptPubKey) {
-                        // Check if this is an OP_RETURN script (starts with 6a)
+                        // OP_RETURN outputs (0x6a) cannot receive funds, so we find an alternative output
                         if (scriptPubKey.startsWith('6a')) {
-                            // For OP_RETURN outputs, find the first non-OP_RETURN output
                             for (let i = 0; i < 10; i++) {
                                 if (i === outputIndex) continue;
                                 
                                 const altScriptPubKey = extractScriptPubKeyFromTxHex(transactionHex, i);
                                 if (altScriptPubKey && !altScriptPubKey.startsWith('6a')) {
                                     address = deriveAddressFromScriptPubKey(altScriptPubKey, network);
+                                    actualOutputIndex = i;
                                     if (address) break;
                                 }
                             }
@@ -275,39 +273,34 @@ function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'main
                     }
                 }
             } catch (error) {
-                // Address extraction failed, continue with empty address
+                // Continue with empty address if extraction fails
             }
             
-            // Create a charm for each app in this output
+            // Create charm objects for each app in this output
             for (const [appIndexOrId, charmData] of charmEntries) {
-                // Get the appId - it could be a numeric index or the appId itself
                 let appId: string;
                 let appData: Record<string, any> = {};
                 
-                // Try to find the app by index
+                // Resolve app ID from index or use directly
                 const appIndex = typeof appIndexOrId === 'number' ? appIndexOrId : parseInt(appIndexOrId);
                 if (!isNaN(appIndex)) {
-                    // Get the appId by index
                     const appIds = Array.from(appDataMap.keys());
                     if (appIndex < appIds.length) {
                         appId = appIds[appIndex];
                         appData = appDataMap.get(appId) || {};
                     } else {
-                        // Index out of bounds, skip
                         continue;
                     }
                 } else {
-                    // Use the key as appId directly
                     appId = appIndexOrId;
                     appData = appDataMap.get(appId) || {};
                 }
                 
-                // Extract amount from charm data
+                // Extract charm amount from various possible formats
                 let amount = 0;
                 if (typeof charmData === 'number') {
                     amount = charmData;
                 } else if (charmData && typeof charmData === 'object') {
-                    // Try common field names
                     if (typeof charmData.amount === 'number') {
                         amount = charmData.amount;
                     } else if (typeof charmData.remaining === 'number') {
@@ -316,7 +309,7 @@ function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'main
                         amount = charmData.value;
                     }
                     
-                    // Merge charm-specific data into app data
+                    // Merge charm-specific metadata into app data
                     if (charmData instanceof Map) {
                         for (const [k, v] of charmData.entries()) {
                             if (k !== 'amount' && k !== 'remaining' && k !== 'value') {
@@ -356,11 +349,16 @@ function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'main
         });
     }
     
+    charms.sort((a, b) => a.outputIndex - b.outputIndex);
+    
     return charms;
 }
 
 /**
- * Get WASM module info for debugging
+ * Returns diagnostic information about the WASM module state.
+ * Useful for troubleshooting initialization issues.
+ * 
+ * @returns Object containing availability status and module metadata
  */
 export function getWasmInfo(): any {
     if (!wasmModule) {

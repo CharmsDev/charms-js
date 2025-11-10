@@ -1,12 +1,14 @@
-import * as bitcoin from 'bitcoinjs-lib';
+import { Transaction } from '@scure/btc-signer';
+import { hex } from '@scure/base';
 import { CharmObj, BitcoinNetwork, NetworkConfig, CharmExtractionResult } from './shared/types.js';
 import { initializeWasm, isWasmAvailable, extractCharmsWithWasm, getWasmInfo } from './shared/wasm-integration.js';
 
 /**
- * Extract and verify spell from transaction using WASM exclusively
- * @param txHex - Transaction hex string
- * @param network - Bitcoin network (optional, defaults to testnet4)
- * @returns Promise resolving to CharmExtractionResult with standardized response
+ * Extracts and verifies charms from a Bitcoin transaction.
+ * 
+ * @param txHex - Raw transaction in hexadecimal format
+ * @param network - Bitcoin network ('mainnet' or 'testnet4')
+ * @returns Extraction result containing charms array and success status
  */
 export async function extractAndVerifySpell(txHex: string, network: BitcoinNetwork = 'testnet4'): Promise<CharmExtractionResult> {
     if (!isWasmAvailable()) {
@@ -23,19 +25,34 @@ export async function extractAndVerifySpell(txHex: string, network: BitcoinNetwo
 }
 
 /**
- * Extract transaction ID from hex (simplified version)
+ * Computes the transaction ID from raw transaction hex.
+ * Handles SegWit transactions correctly by excluding witness data from the hash.
+ * 
+ * @param txHex - Raw transaction in hexadecimal format
+ * @returns Transaction ID in standard display format (reversed byte order)
  */
 function extractTxIdFromHex(txHex: string): string {
   try {
-    const tx = bitcoin.Transaction.fromHex(txHex);
-    return tx.getId();
+    const txBytes = hex.decode(txHex);
+    const tx = Transaction.fromRaw(txBytes);
+    
+    // Transaction ID is the double SHA256 of the transaction without witness data
+    // Reverse byte order for standard display format
+    const txIdBytes = hex.decode(tx.id);
+    const reversed = new Uint8Array(txIdBytes).reverse();
+    return hex.encode(reversed);
   } catch (error) {
     throw new Error('Invalid transaction hex format');
   }
 }
 
-
-// Fetch transaction hex from API
+/**
+ * Fetches raw transaction hex from mempool.space API.
+ * 
+ * @param txId - Transaction ID to fetch
+ * @param config - Optional network configuration
+ * @returns Transaction hex string, or null if not found
+ */
 export async function fetchTransactionHex(txId: string, config?: NetworkConfig): Promise<string | null> {
   const network = config?.network || 'testnet4';
   const baseUrl = config?.apiBaseUrl || (network === 'mainnet' 
