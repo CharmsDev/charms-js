@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.1] - 2025-11-10
+
+### Documentation
+- Added comprehensive JSDoc comments to `CharmObj` interface
+- Clarified that `txid` is in display format (little-endian, reversed bytes)
+- Added detailed field descriptions in README
+- Documented address format support (P2PKH, P2SH, P2WPKH, P2WSH, P2TR)
+- Explained `outputIndex` usage for UTXO identification
+
 ## [3.3.0] - 2025-11-10
 
 ### Changed

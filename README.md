@@ -88,8 +88,8 @@ Extracts charms from a transaction, filtered by wallet ownership.
 ```typescript
 interface CharmObj {
   appId: string;
-  amount: number;
-  version: string;
+  amount: number;           // Amount in satoshis
+  version: number;
   metadata: {
     ticker?: string;
     name?: string;
@@ -99,11 +99,22 @@ interface CharmObj {
     url?: string;
   };
   app: Record<string, any>;
-  outputIndex: number;
-  txid: string;
-  address: string;
+  outputIndex: number;      // Zero-based output index in the transaction
+  txid: string;             // Transaction ID in display format (little-endian, reversed bytes)
+  address: string;          // Bitcoin address for this output (P2PKH, P2SH, P2WPKH, P2WSH, or P2TR)
 }
 ```
+
+### Important Notes
+
+**Transaction ID Format:**
+The `txid` field is returned in **display format** (little-endian, reversed bytes), which matches the format used by block explorers like mempool.space. This is the standard format for displaying transaction IDs to users.
+
+**Output Index:**
+The `outputIndex` corresponds to the position of this charm's output in the transaction, starting from 0. Use this with `txid` to uniquely identify the UTXO: `${txid}:${outputIndex}`
+
+**Address:**
+The `address` field contains the Bitcoin address that controls this output. This is extracted directly from the output's scriptPubKey and supports all standard address types including Taproot (P2TR).
 
 ## Migration from v3.0.x
 
