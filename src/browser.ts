@@ -15,7 +15,7 @@ async function autoInitWasm(): Promise<void> {
     
     initPromise = (async () => {
         // @ts-ignore - Import the new web target WASM module
-        const wasmModule = await import('./wasm/charms_lib.js') as any;
+        const wasmModule = await import('../src/wasm/charms_lib.js') as any;
         
         // Initialize WASM using the default init function
         // It will automatically find the .wasm file relative to the JS file
