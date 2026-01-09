@@ -14,14 +14,11 @@ async function autoInitWasm(): Promise<void> {
     if (initPromise) return initPromise;
     
     initPromise = (async () => {
-        // @ts-ignore - Import the new web target WASM module
+        // @ts-ignore - Import the bundler target WASM module (auto-initialized by Webpack)
         const wasmModule = await import('../src/wasm/charms_lib.js') as any;
         
-        // Initialize WASM using the default init function
-        // It will automatically find the .wasm file relative to the JS file
-        await wasmModule.default();
-        
         // Pass the module to our integration layer
+        // Bundler target auto-initializes, no default() call needed
         initializeWasm(wasmModule);
         wasmInitialized = true;
     })();
