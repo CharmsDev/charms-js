@@ -13,42 +13,48 @@ npm install charms-js
 ### Browser (Automatic WASM initialization)
 
 ```typescript
-import { extractCharmsForWallet } from 'charms-js';
+import { extractCharmsForWallet } from "charms-js";
 
 // Simple usage - WASM auto-initializes
 const charms = await extractCharmsForWallet(
-  txHex, 
-  txId, 
-  walletOutpoints, 
-  'testnet4'
+  txHex,
+  txId,
+  walletOutpoints,
+  "testnet4"
 );
 
-console.log('Charms found:', charms);
+console.log("Charms found:", charms);
 ```
 
 **Requirements for Browser:**
+
 - Copy `charms_lib_bg.wasm` to your `public/` directory
 - The library will automatically load and initialize the WASM module
 
 ### Node.js (Manual WASM initialization)
 
 ```typescript
-import { initializeWasm, extractCharmsForWallet } from 'charms-js/dist/node';
+import { initializeWasm, extractCharmsForWallet } from "charms-js/dist/node";
 
 // Manual WASM initialization required
-const wasmBindings = await import('charms-js/dist/wasm/charms_lib_bg.js');
-const fs = require('fs');
-const wasmBuffer = fs.readFileSync('path/to/charms_lib_bg.wasm');
+const wasmBindings = await import("charms-js/dist/wasm/charms_lib_bg.js");
+const fs = require("fs");
+const wasmBuffer = fs.readFileSync("path/to/charms_lib_bg.wasm");
 
 const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
-  './charms_lib_bg.js': wasmBindings
+  "./charms_lib_bg.js": wasmBindings,
 });
 
 wasmBindings.__wbg_set_wasm(wasmModule.instance.exports);
 initializeWasm(wasmBindings);
 
 // Now you can use the library
-const charms = await extractCharmsForWallet(txHex, txId, walletOutpoints, 'testnet4');
+const charms = await extractCharmsForWallet(
+  txHex,
+  txId,
+  walletOutpoints,
+  "testnet4"
+);
 ```
 
 ## File Structure
@@ -72,12 +78,46 @@ src/
 Extracts charms from a transaction, filtered by wallet ownership.
 
 **Parameters:**
+
 - `txHex`: Transaction hex string
 - `txId`: Transaction ID
 - `walletOutpoints`: Set of wallet-owned outpoints (`txid:vout`)
 - `network`: 'mainnet' or 'testnet4' (default: 'testnet4')
 
 **Returns:** `Promise<CharmObj[]>`
+
+### `extractAndVerifySpell(txHex, network?, txId?, mock?)`
+
+Extracts and optionally verifies charms from a transaction.
+
+**Parameters:**
+
+- `txHex`: Transaction hex string
+- `network`: 'mainnet' or 'testnet4' (default: 'testnet4')
+- `txId`: Optional transaction ID (calculated automatically if not provided)
+- `mock`: If `true`, skip proof verification (for mock/test proofs). Default: `false`
+
+**Returns:** `Promise<CharmExtractionResult>`
+
+**Example - Production (with verification):**
+
+```typescript
+import { extractAndVerifySpell } from "charms-js";
+
+const result = await extractAndVerifySpell(txHex, "mainnet");
+if (result.success) {
+  console.log("Charms:", result.charms);
+}
+```
+
+**Example - Testnet with mock proofs (skip verification):**
+
+```typescript
+// For testnet transactions using mock proofs
+const result = await extractAndVerifySpell(txHex, "testnet4", undefined, true);
+```
+
+> **Note:** Mock proofs are used in testnet for development/testing. Production transactions on mainnet should always use `mock=false` (default) to verify the proof cryptographically.
 
 ### Browser-only functions
 
@@ -86,9 +126,16 @@ Extracts charms from a transaction, filtered by wallet ownership.
 ## Types
 
 ```typescript
+interface CharmExtractionResult {
+  success: boolean;
+  charms: CharmObj[];
+  error?: string; // Present if success is false
+  message?: string; // Human-readable status message
+}
+
 interface CharmObj {
   appId: string;
-  amount: number;           // Amount in satoshis
+  amount: number; // Amount in satoshis
   version: number;
   metadata: {
     ticker?: string;
@@ -99,9 +146,9 @@ interface CharmObj {
     url?: string;
   };
   app: Record<string, any>;
-  outputIndex: number;      // Zero-based output index in the transaction
-  txid: string;             // Transaction ID in display format (little-endian, reversed bytes)
-  address: string;          // Bitcoin address for this output (P2PKH, P2SH, P2WPKH, P2WSH, or P2TR)
+  outputIndex: number; // Zero-based output index in the transaction
+  txid: string; // Transaction ID in display format (little-endian, reversed bytes)
+  address: string; // Bitcoin address for this output (P2PKH, P2SH, P2WPKH, P2WSH, or P2TR)
 }
 ```
 

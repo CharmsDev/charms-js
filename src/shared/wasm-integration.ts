@@ -28,9 +28,11 @@ export function isWasmAvailable(): boolean {
  * Extract charms using WASM (when available)
  * @param txHex - Transaction hex string
  * @param txId - Transaction ID
+ * @param network - Network type ('mainnet' or 'testnet4')
+ * @param mock - If true, skip verification (for mock proofs). Default: false (verify)
  * @returns Standardized CharmExtractionResult
  */
-export async function extractCharmsWithWasm(txHex: string, txId: string, network: 'mainnet' | 'testnet4' = 'testnet4'): Promise<CharmExtractionResult> {
+export async function extractCharmsWithWasm(txHex: string, txId: string, network: 'mainnet' | 'testnet4' = 'testnet4', mock: boolean = false): Promise<CharmExtractionResult> {
     if (!isWasmAvailable()) {
         return {
             success: false,
@@ -41,15 +43,33 @@ export async function extractCharmsWithWasm(txHex: string, txId: string, network
 
     try {
         const param = { "Bitcoin": txHex };
-        // Try with mock mode enabled first (for test transactions)
         let wasmResult;
-        try {
-            wasmResult = await wasmModule.extractAndVerifySpell(param, true); // mock mode = true
-        } catch (mockError) {
+        
+        if (mock) {
+            // Mock mode: use extractSpellOnly (no verification)
+            if (typeof wasmModule.extractSpellOnly === 'function') {
+                try {
+                    wasmResult = await wasmModule.extractSpellOnly(param);
+                } catch (extractOnlyError: any) {
+                    return {
+                        success: true,
+                        charms: [],
+                        message: 'No charms found in transaction'
+                    };
+                }
+            } else {
+                return {
+                    success: false,
+                    charms: [],
+                    error: 'extractSpellOnly not available in WASM module'
+                };
+            }
+        } else {
+            // Normal mode: verify the proof
             try {
-                wasmResult = await wasmModule.extractAndVerifySpell(param, false); // mock mode = false
-            } catch (prodError) {
-                // Both modes failed - this is expected for transactions without charms
+                wasmResult = await wasmModule.extractAndVerifySpell(param, false);
+            } catch (prodError: any) {
+                // Verification failed - no valid charms in transaction
                 return {
                     success: true,
                     charms: [],
@@ -59,7 +79,12 @@ export async function extractCharmsWithWasm(txHex: string, txId: string, network
         }
         
         // Debug the structure of app_public_inputs
+        console.log('[WASM] wasmResult:', wasmResult);
+        console.log('[WASM] wasmResult.app_public_inputs:', wasmResult?.app_public_inputs);
+        console.log('[WASM] wasmResult.tx:', wasmResult?.tx);
+        
         if (!wasmResult || !wasmResult.app_public_inputs || !wasmResult.tx) {
+            console.log('[WASM] Missing required fields, returning empty');
             return {
                 success: true,
                 charms: [],
@@ -193,6 +218,14 @@ function deriveAddressFromScriptPubKey(scriptPubKey: string, network: 'mainnet' 
  * Convert WASM result to CharmObj array
  */
 function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'mainnet' | 'testnet4' = 'testnet4', txHex?: string): CharmObj[] {
+    console.log(`[CHARMS-JS DEBUG] ========================================`);
+    console.log(`[CHARMS-JS DEBUG] convertWasmResultToCharms called`);
+    console.log(`[CHARMS-JS DEBUG] txId: ${txId}`);
+    console.log(`[CHARMS-JS DEBUG] network: ${network}`);
+    console.log(`[CHARMS-JS DEBUG] txHex provided: ${!!txHex}`);
+    console.log(`[CHARMS-JS DEBUG] txHex length: ${txHex?.length || 0}`);
+    console.log(`[CHARMS-JS DEBUG] ========================================`);
+    
     const charms: CharmObj[] = [];
     
     // Extract transaction hex for address derivation - use provided txHex or extract from app_public_inputs
@@ -250,31 +283,49 @@ function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'main
             let address = '';
             let actualOutputIndex = outputIndex;
             
+            console.log(`[CHARMS-JS DEBUG] Processing output ${outputIndex}`);
+            console.log(`[CHARMS-JS DEBUG] Transaction hex available: ${!!transactionHex}`);
+            console.log(`[CHARMS-JS DEBUG] Transaction hex length: ${transactionHex?.length || 0}`);
+            
             try {
                 if (transactionHex) {
                     let scriptPubKey = extractScriptPubKeyFromTxHex(transactionHex, outputIndex);
+                    console.log(`[CHARMS-JS DEBUG] Extracted scriptPubKey for output ${outputIndex}: ${scriptPubKey}`);
                     
                     if (scriptPubKey) {
                         // OP_RETURN outputs (0x6a) cannot receive funds, so we find an alternative output
                         if (scriptPubKey.startsWith('6a')) {
+                            console.log(`[CHARMS-JS DEBUG] Output ${outputIndex} is OP_RETURN, searching for alternative output`);
                             for (let i = 0; i < 10; i++) {
                                 if (i === outputIndex) continue;
                                 
                                 const altScriptPubKey = extractScriptPubKeyFromTxHex(transactionHex, i);
+                                console.log(`[CHARMS-JS DEBUG] Alternative output ${i} scriptPubKey: ${altScriptPubKey}`);
                                 if (altScriptPubKey && !altScriptPubKey.startsWith('6a')) {
                                     address = deriveAddressFromScriptPubKey(altScriptPubKey, network);
+                                    console.log(`[CHARMS-JS DEBUG] Derived address from output ${i}: ${address}`);
                                     actualOutputIndex = i;
                                     if (address) break;
                                 }
                             }
                         } else {
                             address = deriveAddressFromScriptPubKey(scriptPubKey, network);
+                            console.log(`[CHARMS-JS DEBUG] Derived address from output ${outputIndex}: ${address}`);
                         }
+                    } else {
+                        console.log(`[CHARMS-JS DEBUG] No scriptPubKey extracted for output ${outputIndex}`);
                     }
+                } else {
+                    console.log(`[CHARMS-JS DEBUG] No transaction hex available for address extraction`);
                 }
             } catch (error) {
+                console.log(`[CHARMS-JS DEBUG] Error extracting address: ${error}`);
                 // Continue with empty address if extraction fails
             }
+            
+            console.log(`[CHARMS-JS DEBUG] Final address for output ${outputIndex}: "${address}"`);
+            console.log(`[CHARMS-JS DEBUG] Address is empty: ${address === ''}`);
+            console.log(`[CHARMS-JS DEBUG] ---`)
             
             // Create charm objects for each app in this output
             for (const [appIndexOrId, charmData] of charmEntries) {
@@ -343,6 +394,13 @@ function convertWasmResultToCharms(wasmResult: any, txId: string, network: 'main
                     txid: txId,
                     address: address
                 };
+                
+                console.log(`[CHARMS-JS DEBUG] Created CharmObj:`);
+                console.log(`[CHARMS-JS DEBUG]   - appId: ${charm.appId}`);
+                console.log(`[CHARMS-JS DEBUG]   - outputIndex: ${charm.outputIndex}`);
+                console.log(`[CHARMS-JS DEBUG]   - address: "${charm.address}"`);
+                console.log(`[CHARMS-JS DEBUG]   - address length: ${charm.address.length}`);
+                console.log(`[CHARMS-JS DEBUG]   - amount: ${charm.amount}`);
                 
                 charms.push(charm);
             }

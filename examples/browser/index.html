@@ -1,251 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Charms-JS Browser Example</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: #f5f5f5;
-            color: #333;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            color: #7f8c8d;
-            margin-bottom: 30px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .card h2 {
-            color: #2c3e50;
-            margin-bottom: 16px;
-            font-size: 18px;
-        }
-        
-        .input-group {
-            margin-bottom: 16px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-        
-        button:hover {
-            background: #2980b9;
-        }
-        
-        button:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-        
-        .loading {
-            display: none;
-            color: #3498db;
-            margin-top: 16px;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-        
-        .results {
-            margin-top: 20px;
-        }
-        
-        .charm {
-            background: #f8f9fa;
-            border-left: 4px solid #3498db;
-            padding: 16px;
-            margin-bottom: 12px;
-            border-radius: 4px;
-        }
-        
-        .charm h3 {
-            color: #2c3e50;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-        
-        .charm-field {
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .charm-field strong {
-            color: #555;
-            display: inline-block;
-            min-width: 120px;
-        }
-        
-        .charm-field code {
-            background: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 12px;
-            word-break: break-all;
-        }
-        
-        .error {
-            background: #fee;
-            border-left: 4px solid #e74c3c;
-            padding: 16px;
-            border-radius: 4px;
-            color: #c0392b;
-        }
-        
-        .success {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-            padding: 16px;
-            border-radius: 4px;
-            color: #155724;
-        }
-        
-        code {
-            font-family: 'Courier New', monospace;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      h1 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #7f8c8d;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .card h2 {
+        color: #2c3e50;
+        margin-bottom: 16px;
+        font-size: 18px;
+      }
+
+      .input-group {
+        margin-bottom: 16px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: "Courier New", monospace;
+      }
+
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #2980b9;
+      }
+
+      button:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+      }
+
+      .loading {
+        display: none;
+        color: #3498db;
+        margin-top: 16px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .results {
+        margin-top: 20px;
+      }
+
+      .charm {
+        background: #f8f9fa;
+        border-left: 4px solid #3498db;
+        padding: 16px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+      }
+
+      .charm h3 {
+        color: #2c3e50;
+        margin-bottom: 12px;
+        font-size: 16px;
+      }
+
+      .charm-field {
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .charm-field strong {
+        color: #555;
+        display: inline-block;
+        min-width: 120px;
+      }
+
+      .charm-field code {
+        background: #e9ecef;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        word-break: break-all;
+      }
+
+      .error {
+        background: #fee;
+        border-left: 4px solid #e74c3c;
+        padding: 16px;
+        border-radius: 4px;
+        color: #c0392b;
+      }
+
+      .success {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 16px;
+        border-radius: 4px;
+        color: #155724;
+      }
+
+      code {
+        font-family: "Courier New", monospace;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🪙 Charms-JS Browser Example</h1>
-    <p class="subtitle">Extract Bitcoin Charms from transactions in the browser</p>
+    <p class="subtitle">
+      Extract Bitcoin Charms from transactions in the browser
+    </p>
 
     <div class="card">
-        <h2>Transaction Details</h2>
-        
-        <div class="input-group">
-            <label for="txId">Transaction ID</label>
-            <input 
-                type="text" 
-                id="txId" 
-                placeholder="Enter transaction ID"
-                value="3c83865addfc9ff49e06f997c1bf50ba241c191182974ad9dae9ea70fc8a2dc6"
-            >
-        </div>
-        
-        <div class="input-group">
-            <label for="network">Network</label>
-            <select id="network">
-                <option value="mainnet">Mainnet</option>
-                <option value="testnet4">Testnet4</option>
-            </select>
-        </div>
-        
-        <button onclick="extractCharms()">Extract Charms</button>
-        
-        <div class="loading" id="loading">
-            ⏳ Loading transaction and extracting charms...
-        </div>
+      <h2>Transaction Details</h2>
+
+      <div class="input-group">
+        <label for="txId">Transaction ID</label>
+        <input
+          type="text"
+          id="txId"
+          placeholder="Enter transaction ID"
+          value="286e41579e46960f034097a67c6b033528f712fc3537d0c32395307525fe23f3"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="network">Network</label>
+        <select id="network">
+          <option value="mainnet">Mainnet</option>
+          <option value="testnet4" selected>Testnet4</option>
+        </select>
+      </div>
+
+      <button onclick="extractCharms()">Extract Charms</button>
+
+      <div class="loading" id="loading">
+        ⏳ Loading transaction and extracting charms...
+      </div>
     </div>
 
     <div id="results"></div>
 
     <script type="module">
-        // Import charms-js (Vite will bundle this)
-        import { extractAndVerifySpell } from '../../src/index.ts';
+      // Import charms-js (Vite will bundle this)
+      import { extractAndVerifySpell } from "../../src/index.ts";
 
-        // Make function available globally
-        window.extractCharms = async function() {
-            const txId = document.getElementById('txId').value.trim();
-            const network = document.getElementById('network').value;
-            const resultsDiv = document.getElementById('results');
-            const loadingDiv = document.getElementById('loading');
-            const button = document.querySelector('button');
-            
-            if (!txId) {
-                resultsDiv.innerHTML = '<div class="card error">Please enter a transaction ID</div>';
-                return;
-            }
-            
-            // Show loading
-            button.disabled = true;
-            loadingDiv.classList.add('show');
-            resultsDiv.innerHTML = '';
-            
-            try {
-                // Fetch transaction hex from mempool.space
-                const apiUrl = network === 'mainnet' 
-                    ? `https://mempool.space/api/tx/${txId}/hex`
-                    : `https://mempool.space/testnet4/api/tx/${txId}/hex`;
-                    
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    throw new Error('Transaction not found');
-                }
-                
-                const txHex = await response.text();
-                
-                // Extract charms using charms-js
-                const result = await extractAndVerifySpell(txHex, network);
-                
-                // Display results
-                if (!result.success) {
-                    resultsDiv.innerHTML = `
+      // Make function available globally
+      window.extractCharms = async function () {
+        const txId = document.getElementById("txId").value.trim();
+        const network = document.getElementById("network").value;
+        const resultsDiv = document.getElementById("results");
+        const loadingDiv = document.getElementById("loading");
+        const button = document.querySelector("button");
+
+        if (!txId) {
+          resultsDiv.innerHTML =
+            '<div class="card error">Please enter a transaction ID</div>';
+          return;
+        }
+
+        // Show loading
+        button.disabled = true;
+        loadingDiv.classList.add("show");
+        resultsDiv.innerHTML = "";
+
+        try {
+          // Fetch transaction hex from mempool.space
+          const apiUrl =
+            network === "mainnet"
+              ? `https://mempool.space/api/tx/${txId}/hex`
+              : `https://mempool.space/testnet4/api/tx/${txId}/hex`;
+
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error("Transaction not found");
+          }
+
+          const txHex = await response.text();
+          console.log('[TEST] txHex length:', txHex.length);
+          console.log('[TEST] txHex first 100 chars:', txHex.substring(0, 100));
+
+          // Extract charms using charms-js
+          // Using mock=true for testnet4 mock proof transactions
+          const mock = true; // Set to false for production proofs
+          console.log('[TEST] Calling extractAndVerifySpell with network:', network, 'mock:', mock);
+          const result = await extractAndVerifySpell(txHex, network, undefined, mock);
+          console.log('[TEST] Result:', JSON.stringify(result, null, 2));
+
+          // Display results
+          if (!result.success) {
+            resultsDiv.innerHTML = `
                         <div class="card error">
-                            <strong>Error:</strong> ${result.error || 'Failed to extract charms'}
+                            <strong>Error:</strong> ${
+                              result.error || "Failed to extract charms"
+                            }
                         </div>
                     `;
-                    return;
-                }
-                
-                if (result.charms.length === 0) {
-                    resultsDiv.innerHTML = `
+            return;
+          }
+
+          if (result.charms.length === 0) {
+            resultsDiv.innerHTML = `
                         <div class="card">
                             <p>No charms found in this transaction.</p>
                         </div>
                     `;
-                    return;
-                }
-                
-                // Success - display charms
-                let html = `
+            return;
+          }
+
+          // Success - display charms
+          let html = `
                     <div class="card success">
                         <strong>✅ Success!</strong> Found ${result.charms.length} charm(s)
                     </div>
@@ -253,51 +267,58 @@
                         <h2>Extracted Charms</h2>
                         <div class="results">
                 `;
-                
-                result.charms.forEach((charm, index) => {
-                    html += `
+
+          result.charms.forEach((charm, index) => {
+            html += `
                         <div class="charm">
                             <h3>Charm #${index + 1}</h3>
                             <div class="charm-field">
-                                <strong>TX ID:</strong> <code>${charm.txid}</code>
+                                <strong>TX ID:</strong> <code>${
+                                  charm.txid
+                                }</code>
                             </div>
                             <div class="charm-field">
-                                <strong>Output Index:</strong> ${charm.outputIndex}
+                                <strong>Output Index:</strong> ${
+                                  charm.outputIndex
+                                }
                             </div>
                             <div class="charm-field">
-                                <strong>Address:</strong> <code>${charm.address}</code>
+                                <strong>Address:</strong> <code>${
+                                  charm.address
+                                }</code>
                             </div>
                             <div class="charm-field">
                                 <strong>Amount:</strong> ${charm.amount.toLocaleString()} sats
                             </div>
                             <div class="charm-field">
-                                <strong>App ID:</strong> <code>${charm.appId}</code>
+                                <strong>App ID:</strong> <code>${
+                                  charm.appId
+                                }</code>
                             </div>
                             <div class="charm-field">
                                 <strong>Version:</strong> ${charm.version}
                             </div>
                         </div>
                     `;
-                });
-                
-                html += `
+          });
+
+          html += `
                         </div>
                     </div>
                 `;
-                
-                resultsDiv.innerHTML = html;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = `
+
+          resultsDiv.innerHTML = html;
+        } catch (error) {
+          resultsDiv.innerHTML = `
                     <div class="card error">
                         <strong>Error:</strong> ${error.message}
                     </div>
                 `;
-            } finally {
-                button.disabled = false;
-                loadingDiv.classList.remove('show');
-            }
-        };
+        } finally {
+          button.disabled = false;
+          loadingDiv.classList.remove("show");
+        }
+      };
     </script>
-</body>
+  </body>
 </html>

@@ -14,29 +14,15 @@ async function autoInitWasm(): Promise<void> {
     if (initPromise) return initPromise;
     
     initPromise = (async () => {
-        // @ts-ignore
-        const wasmBindings = await import('./wasm/charms_lib_bg.js') as any;
-        const paths = ['/charms_lib_bg.wasm', '/wasm/charms_lib_bg.wasm'];
+        // @ts-ignore - Import the new web target WASM module
+        const wasmModule = await import('./wasm/charms_lib.js') as any;
         
-        let wasmBuffer: ArrayBuffer | null = null;
-        for (const path of paths) {
-            try {
-                const response = await fetch(path);
-                if (response.ok) {
-                    wasmBuffer = await response.arrayBuffer();
-                    break;
-                }
-            } catch (e) { continue; }
-        }
+        // Initialize WASM using the default init function
+        // It will automatically find the .wasm file relative to the JS file
+        await wasmModule.default();
         
-        if (!wasmBuffer) throw new Error('WASM file not found');
-        
-        const instance = await WebAssembly.instantiate(wasmBuffer, {
-            './charms_lib_bg.js': wasmBindings
-        });
-        
-        wasmBindings.__wbg_set_wasm(instance.instance.exports);
-        initializeWasm(wasmBindings);
+        // Pass the module to our integration layer
+        initializeWasm(wasmModule);
         wasmInitialized = true;
     })();
     
@@ -58,11 +44,16 @@ export async function extractCharmsForWallet(
 
 /**
  * Extract and verify spell - Browser version with auto-init
+ * @param txHex - Transaction hex string
+ * @param network - Network type ('mainnet' or 'testnet4')
+ * @param txId - Optional transaction ID (will be calculated if not provided)
+ * @param mock - If true, skip verification (for mock proofs). Default: false
  */
 export async function extractAndVerifySpell(
     txHex: string, 
     network: BitcoinNetwork = 'testnet4',
-    txId?: string
+    txId?: string,
+    mock: boolean = false
 ): Promise<CharmExtractionResult> {
     await autoInitWasm();
     
@@ -72,7 +63,7 @@ export async function extractAndVerifySpell(
         calculatedTxId = await calculateTxIdFromHex(txHex);
     }
     
-    return extractCharmsWithWasm(txHex, calculatedTxId, network);
+    return extractCharmsWithWasm(txHex, calculatedTxId, network, mock);
 }
 
 /**
